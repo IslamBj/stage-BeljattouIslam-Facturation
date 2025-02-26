@@ -69,6 +69,32 @@ app.post("/api/login", (req, res) => {
   });
 });
 
+// Update admin profile
+app.put("/api/admin", (req, res) => {
+  const { oldEmail, newEmail, newPassword } = req.body;
+
+ 
+    const query = `
+      UPDATE admin 
+      SET email = ?, password = ?
+      WHERE email = ? ;
+    `;
+
+    db.query(query, [newEmail || oldEmail, newPassword, oldEmail], (err, result) => {
+      if (err) {
+        console.error("Error updating profile:", err);
+        return res.status(500).json({ error: "Error updating profile" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json({ message: "Profile updated successfully" });
+    });
+  }
+);
+
+
+
 // Get all societies
 app.get("/api/societies", (req, res) => {
   const query = "SELECT * FROM societes";
@@ -253,14 +279,15 @@ app.get("/api/recus", (req, res) => {
 // Modify an invoice
 app.put("/api/factures/:id", upload.single('facture'), (req, res) => {
   const { id } = req.params;
-  const { invoiceNumber, amount, date, description } = req.body;
-  const facturePath = req.file ? req.file.filename : null;
+  const { invoiceNumber, amount, date, description, existingImage } = req.body;
+  const facturePath = req.file ? req.file.filename : existingImage;
 
   const updateQuery = `
     UPDATE factures 
     SET invoice_number = ?, amount = ?, date = ?, description = ?, facture = ?
     WHERE id = ?
   `;
+
   db.query(
     updateQuery,
     [invoiceNumber, amount, date, description, facturePath, id],
@@ -268,6 +295,9 @@ app.put("/api/factures/:id", upload.single('facture'), (req, res) => {
       if (err) {
         console.error("Error updating invoice:", err);
         return res.status(500).json({ error: "Error updating invoice" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Invoice not found" });
       }
       res.json({ message: "Invoice updated successfully" });
     }
@@ -290,36 +320,51 @@ app.delete("/api/factures/:id", (req, res) => {
   });
 });
 
+// Delete a receipt
+app.delete("/api/recus/:numero_recu", (req, res) => {
+  const { numero_recu } = req.params;
+  const query = "UPDATE recus SET valid = 0 WHERE numero_recu = ?"; // Soft delete
+  db.query(query, [numero_recu], (err, result) => {
+    if (err) {
+      console.error("Error deleting receipt:", err);
+      return res.status(500).json({ error: "Error deleting receipt" });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Receipt not found" });
+    }
+    res.json({ message: "Receipt deleted successfully" });
+  });
+});
 
 // Modify a receipt
 app.patch("/api/recus/:numero_recu", upload.single('recuCopier'), (req, res) => {
-  const { id } = req.params;
-  const { numero_recu, amount, date, description } = req.body;
-  const recuCopierPath = req.file ? req.file.filename : null;
+  const { numero_recu } = req.params;
+  const { amount, date, description, existingImage } = req.body;
+  const recuCopierPath = req.file ? req.file.filename : existingImage;
 
   const updateQuery = `
     UPDATE recus 
-    SET  montant = ?, date = ?, description = ?, recu_copier = ?
+    SET montant = ?, date = ?, description = ?, recu_copier = ?
     WHERE numero_recu = ?
   `;
+
   db.query(
     updateQuery,
-    [numero_recu, amount, date, description, recuCopierPath],
+    [amount, date, description, recuCopierPath, numero_recu],
     (err, result) => {
       if (err) {
         console.error("Error updating receipt:", err);
         return res.status(500).json({ error: "Error updating receipt" });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: "Receipt not found" });
       }
       res.json({ message: "Receipt updated successfully" });
     }
   );
 });
 
-
-
-
-
-//update company
+// Update company
 app.put("/api/societies/:code_s", upload.single("image"), (req, res) => {
   const { code_s } = req.params;
   const {
@@ -334,10 +379,20 @@ app.put("/api/societies/:code_s", upload.single("image"), (req, res) => {
     existingImage,
   } = req.body;
 
-  // Détermine l'image à conserver (nouvelle ou ancienne)
-  const image = req.file ? req.file.filename : existingImage;
+  // Handle file upload
+  let image;
+  if (req.file) {
+    // If a new file is uploaded, use its filename
+    image = req.file.filename;
+  } else if (existingImage) {
+    // If no new file is uploaded, keep the existing image
+    image = existingImage;
+  } else {
+    // If no file is provided and no existing image, set image to null
+    image = null;
+  }
 
-  // Construction de la requête SQL
+  // Build the SQL query
   const query = `
     UPDATE societes 
     SET name = ?, domain = ?, directorName = ?, directorLastName = ?, email = ?, 
@@ -345,30 +400,26 @@ app.put("/api/societies/:code_s", upload.single("image"), (req, res) => {
     WHERE code_s = ?
   `;
 
-  // Paramètres à passer à la requête
+  // Parameters to pass to the query
   const params = image
     ? [name, domain, directorName, directorLastName, email, tel, adresse, MF, image, code_s]
     : [name, domain, directorName, directorLastName, email, tel, adresse, MF, code_s];
 
-  // Exécute la requête
+  // Execute the query
   db.query(query, params, (err, result) => {
     if (err) {
-      console.error("❌ Erreur mise à jour société:", err);
-      return res.status(500).json({ error: "Erreur lors de la mise à jour de la société" });
+      console.error("❌ Error updating society:", err);
+      return res.status(500).json({ error: "Error updating society" });
     }
 
-    // Vérifie si une ligne a été modifiée
+    // Check if a row was modified
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Société non trouvée" });
+      return res.status(404).json({ error: "Society not found" });
     }
 
-    res.json({ message: "✅ Société mise à jour avec succès", image });
+    res.json({ message: "✅ Society updated successfully", image });
   });
 });
-
-
-
-
 
 // Calculate total amounts for a society
 app.get("/api/societies/:code/totals", (req, res) => {
@@ -437,8 +488,6 @@ app.patch("/api/societies/:code_s", (req, res) => {
     });
   });
 });
-
-
 
 // Create public/uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads');

@@ -15,7 +15,7 @@ const Header = ({ onLogout, toggleSidebar, isSidebarVisible }) => {
         zIndex: 1000,
       }}
     >
-      <div className="container d-flex align-items-center justify-content-between py-2">
+      <div className="container d-flex align-items-center justify-content-between " >
         {/* Left Section: Toggle Sidebar Button and Logo */}
         <div className="d-flex align-items-center">
           {/* Show the button only when the sidebar is hidden */}
@@ -28,14 +28,14 @@ const Header = ({ onLogout, toggleSidebar, isSidebarVisible }) => {
             </button>
           )}
           <img
-            src="/logo.jpg"
+            src="/logo.png"
             alt="Logo"
-            style={{ width: "100px", height: "60px", objectFit: "contain" }}
+            style={{ width: "250px", height: "75px",marginTop:"0", borderRadius:"12px", objectFit: "contain" }}
           />
         </div>
 
         {/* Center Section: Project Title */}
-        <div className="text-center">
+        <div className="text-center" >
           <h4 className="mb-0">Facturation</h4>
         </div>
 

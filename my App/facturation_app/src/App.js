@@ -25,7 +25,7 @@ function App() {
 
   return (
     <Router>
-      <div className="app-container">
+      <div className="app-container" >
         {isAuthenticated ? (
           <>
             {/* Header */}
@@ -33,15 +33,18 @@ function App() {
               onLogout={handleLogout}
               toggleSidebar={toggleSidebar}
               isSidebarVisible={isSidebarVisible}
+              
+              
             />
 
             {/* Sidebar and Main Content */}
-            <div className="d-flex">
+            <div className="d-flex" >
               {/* Sidebar */}
               {isSidebarVisible && (
                 <SideNavBar
                   handleNavClick={handleNavClick}
                   toggleSidebar={toggleSidebar}
+                  
                 />
               )}
 

@@ -35,13 +35,17 @@ const RecuForm = ({ code_s, recu, onClose, onSuccess }) => {
     formData.append("amount", montant);
     formData.append("date", date);
     formData.append("description", description);
+
+    // If no new file is selected, pass the existing image path
     if (recuCopier) {
       formData.append("recuCopier", recuCopier);
+    } else if (recu) {
+      formData.append("existingImage", recu.recu_copier);
     }
 
     try {
       const url = recu ? `http://localhost:5000/api/recus/${recu.numero_recu}` : "http://localhost:5000/api/recus";
-      const method = recu ? "put" : "post";
+      const method = recu ? "patch" : "post";
 
       await axios[method](url, formData, {
         headers: {

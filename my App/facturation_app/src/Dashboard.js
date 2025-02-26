@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import AddSocietyForm from "./components/AddSocietyForm";
 import Company from "./components/Company";
-import RecuForm from "./components/RecuForm";
-import FactureForm from "./components/FactureForm";
+import ManageProfile from "./components/ManageProfile"; // Import the new component
 
 const Dashboard = ({ activeSection }) => {
   const [societies, setSocieties] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedSociety, setSelectedSociety] = useState("");
+  const [user, setUser] = useState({
+    email: "admin@example.com",
+    password: "password123",
+  });
 
   // Charger les sociétés au montage du composant
   useEffect(() => {
@@ -34,32 +36,9 @@ const Dashboard = ({ activeSection }) => {
     setSocieties((prev) => [...prev, newSociety]);
   };
 
-  // Supprimer une société
-  const handleDeleteSociety = async () => {
-    if (!selectedSociety) {
-      alert("Veuillez sélectionner une société à supprimer.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Êtes-vous sûr de vouloir supprimer cette société ?"
-    );
-
-    if (confirmDelete) {
-      try {
-        await axios.patch(`http://localhost:5000/api/societies/${selectedSociety}`, { valid: 0 });
-        setSocieties((prev) =>
-          prev.map((society) =>
-            society.code_s === selectedSociety ? { ...society, valid: 0 } : society
-          )
-        );
-        setSelectedSociety("");
-        alert("Société supprimée avec succès !");
-      } catch (error) {
-        console.error("Erreur lors de la suppression de la société :", error);
-        alert("Échec de la suppression de la société. Veuillez réessayer plus tard.");
-      }
-    }
+  // Mettre à jour le profil
+  const handleUpdateProfile = (updatedProfile) => {
+    setUser(updatedProfile);
   };
 
   return (
@@ -89,8 +68,7 @@ const Dashboard = ({ activeSection }) => {
           )}
         </div>
       )}
-      
-      
+
       {activeSection === "showArchive" && (
         <div className="container mt-4">
           <h5 className="text-center">Sociétés Archivées</h5>
@@ -104,6 +82,10 @@ const Dashboard = ({ activeSection }) => {
             <p>Aucune société trouvée dans l'archive.</p>
           )}
         </div>
+      )}
+
+      {activeSection === "manageProfile" && (
+        <ManageProfile user={user} onUpdateProfile={handleUpdateProfile} />
       )}
     </div>
   );

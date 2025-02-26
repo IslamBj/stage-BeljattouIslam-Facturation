@@ -1,5 +1,5 @@
 import React from "react";
-import { FaPlusCircle, FaListUl, FaArchive, FaTimes } from "react-icons/fa";
+import { FaPlusCircle, FaListUl, FaArchive, FaTimes, FaUserCog } from "react-icons/fa";
 
 const SideNavBar = ({ handleNavClick, toggleSidebar }) => {
   return (
@@ -8,19 +8,21 @@ const SideNavBar = ({ handleNavClick, toggleSidebar }) => {
       style={{
         height: "100%",
         position: "fixed",
-        top: "70px",
+        top: "75px",
         overflowY: "auto",
         background: "#04152f",
-        width: "200px", // Set a fixed width for the sidebar
+        width: "200px",
       }}
     >
       {/* Close Button to Hide Sidebar */}
       <button
-        className="btn btn-outline-light btn-sm btn-no-border" // Use custom CSS class
+        className="btn btn-outline-light btn-sm btn-no-border"
         onClick={toggleSidebar}
       >
         <FaTimes />
-      </button><br></br><br></br>
+      </button>
+      <br />
+      <br />
 
       <h5 className="text-center mb-4" style={{ color: "white" }}>Navigation</h5>
       <ul className="nav flex-column">
@@ -63,6 +65,20 @@ const SideNavBar = ({ handleNavClick, toggleSidebar }) => {
             }}
           >
             <FaArchive className="me-2" /> Afficher Archive
+          </button>
+        </li>
+
+        {/* Manage Profile Button */}
+        <li className="nav-item mb-2">
+          <button
+            className="nav-link btn w-100 text-start d-flex align-items-center rounded-3 p-2"
+            onClick={() => handleNavClick("manageProfile")}
+            style={{
+              transition: "all 0.3s ease",
+              color: "rgb(148, 148, 148)",
+            }}
+          >
+            <FaUserCog className="me-2" /> Gérer le Profil
           </button>
         </li>
       </ul>

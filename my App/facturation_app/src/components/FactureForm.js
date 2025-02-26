@@ -39,8 +39,12 @@ const FactureForm = ({ code_s, facture, onClose, onSuccess }) => {
     formData.append("amount", montant);
     formData.append("date", date);
     formData.append("description", description);
+
+    // If no new file is selected, pass the existing file path
     if (fichier) {
       formData.append("facture", fichier);
+    } else if (facture) {
+      formData.append("existingImage", facture.facture);
     }
 
     try {
